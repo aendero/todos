@@ -1,8 +1,51 @@
 import React, {Fragment, useState, useEffect} from "react";
 import EditTodo from "./EditTodo";
+import EditModal from "./EditModal";
 
 const ListTodo = () => {
     const [todos, setTodos] = useState([])
+    const [todoToEdit, setTodoToEdit] = useState(null)
+    const [editText, setEditText] = useState("")
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    const [editingTodo, setEditingTodo] = useState(null)
+
+    const handleOpenEditModal = (todo) => {
+        setEditingTodo(todo)
+        setEditText(todo.description)
+        setIsModalOpen(true)
+    }
+    const handleCloseEditModal = () => {
+        setIsModalOpen(false)
+        setEditingTodo(null)
+        setEditText("")
+    }
+    const handleEditTextChange = (e) => {
+        setEditText(e.target.value)
+    }
+
+    const handleSaveEdit = async () => {
+        if (!editingTodo || editText.trim() === ""){
+            alert("Ошибка")
+            return
+        }
+        if (editText.trim() === editingTodo.description){
+            handleCloseEditModal()
+            return
+        }
+        try {
+            const body = {description: editText.trim()};
+            const response = await fetch(`http://localhost:5000/todos/${editingTodo.todo_id}`, {
+                method: "PUT",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(body)
+            })
+            console.log(response)
+        } catch (error) {
+            console.error(error)
+        }
+    }
+
+
     const getTodos = async () => {
         try {
             const response = await fetch("http://localhost:5000/todos")
@@ -56,7 +99,9 @@ const ListTodo = () => {
                         <tr key={todo.todo_id}>
                             <td>{todo.description}</td>
                             <td>
-                                <EditTodo />
+                                <button className="btn btn-warning" onClick={() => handleOpenEditModal(todo)}>
+                                    Редактировать
+                                </button>
                             </td> {/* подумать над тем как редачить через клиента йоу */}
                             <td>
                                 <button className="btn btn-danger" onClick={() => deleteTodo(todo.todo_id)}>Удалить</button>
@@ -65,6 +110,14 @@ const ListTodo = () => {
                     ))}
                 </tbody>
             </table>
+            <EditModal
+                isOpen={isModalOpen}
+                onClose={handleCloseEditModal}
+                todo={editingTodo}
+                editText={editText}
+                onEditTextChange={handleEditTextChange}
+                onSave={handleSaveEdit}
+            />
         </Fragment>
     )
 }
