@@ -1,6 +1,7 @@
 import React, {Fragment, useState, useEffect} from "react";
 import EditTodo from "./EditTodo";
 import EditModal from "./EditModal";
+import "./ListTodos.css"
 
 const ListTodo = () => {
     const [todos, setTodos] = useState([])
@@ -40,6 +41,9 @@ const ListTodo = () => {
                 body: JSON.stringify(body)
             })
             console.log(response)
+            setTodos(todos.map(t =>
+                t.todo_id === editingTodo.todo_id ? { ...t, description: editText.trim()} : t
+            ));
         } catch (error) {
             console.error(error)
         }
@@ -91,19 +95,21 @@ const ListTodo = () => {
                     <tr>
                         <th>Описание</th>
                         <th>Редактировать</th>
-                        <th>Удалить</th>
+                        <th>Удалить
+                            
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
                     {todos.map(todo => (
                         <tr key={todo.todo_id}>
-                            <td>{todo.description}</td>
-                            <td>
+                            <td className="col-10 description">{todo.description}</td>
+                            <td className="col-2">
                                 <button className="btn btn-warning" onClick={() => handleOpenEditModal(todo)}>
                                     Редактировать
                                 </button>
                             </td> {/* подумать над тем как редачить через клиента йоу */}
-                            <td>
+                            <td className="col-2">
                                 <button className="btn btn-danger" onClick={() => deleteTodo(todo.todo_id)}>Удалить</button>
                             </td>
                         </tr>
